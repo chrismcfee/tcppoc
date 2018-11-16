@@ -1,3 +1,12 @@
+/*
+
+Task: Implement telnet chat server.
+Description: Implement a TCP server application performing as a chat server. Clients should be able to connect to the listening port using plaintext protocol and be able to communicate with each other. Messages are separated by <LF>, when connected user should be presented with a list of users currently online, everyone see messages from everyone, server should support /nick <nickname> command for users to be able to redefine the default auto-assigned nickname "GuestNNN" and /register command for users to be able to protect their nickname from being taken by other user with a password.
+Language choice: Go, C++.
+
+*/
+
+
 package main
 
 import (
@@ -30,24 +39,36 @@ func (srvr *Server) Run(){
 		select{
 		case user := <-srvr.Join:
 			srvr.User[user.Name] = user
-			go func(){
+			go func() {
 				srvr.Input <- Message{
-					Username: "GuestNNN",
-					Msgtext: fmt.Sprintf("%s joined", user.Name),
+					Nickname: "GuestNNN",
+					Msgtext: fmt.Sprintf("%s has joined", user.Name),
 				}
 			}()
-		case user := < srvr.Leave:
-			delete(cs.Users, user.Name)
+		case user := <- srvr.Leave:
+			delete(srvr.Users, user.Name)
 			go func() {
-				srvr.Input <- Msgtext
+				srvr.Input <- Output{
+					Nickname: "GuestNNN",
+					Msgtext: fmt.Sprintf("%s has left", user.Name),
+				}
 
-		case msg := <- srvr.Input:
-			for _, user :=
+			}()
 
+		case msg := <- srvr.Input: 
+			for _, user := range srvr.Users{
+				select{
+				case user.Output <- msg:
+				default:
+				}
+			}
+		}
+	}
+}
 
+func handleConn(srvr *Server, conn  net.Conn) (
+	defer conn.Close()
 
-
-func handleConn
 
 func changeNick
 

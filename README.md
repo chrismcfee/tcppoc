@@ -2,4 +2,4 @@
 
 for peerstream interview assignment
 
-golang chat server PoC
+go tcp chat server PoC
