@@ -6,66 +6,64 @@ Language choice: Go, C++.
 
 */
 
-
 package main
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"net"
 	"log"
+	"net"
 )
 
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
-
 
 type Newname struct {
 	Name string
 }
 
 type User struct {
-	Name string
-	Output chan Msg
+	Name   string
+	Output chan Message
 }
 
-type Line struct{
+type Message struct {
 	Nickname string
-	Msgtext string
+	Msgtext  string
 }
 
-type Server struct{
+type Server struct {
 	Users map[string]User
-	Join chan User
+	Join  chan User
 	Leave chan User
-	Input chan Line
+	Input chan Message
 }
 
-func (srvr *Server) Run(){
-	for{
-		select{
+func (srvr *Server) Run() {
+	for {
+		select {
 		case user := <-srvr.Join:
-			srvr.User[user.Name] = user
+			srvr.Users[user.Name] = user
 			go func() {
 				srvr.Input <- Message{
-					Nickname: defaultName,
-					Msgtext: fmt.Sprintf("%s has joined", user.Name),
+					Nickname: "System Message",
+					Msgtext:  fmt.Sprintf("%s has joined", user.Name),
 				}
 			}()
-		case user := <- srvr.Leave:
+		case user := <-srvr.Leave:
 			delete(srvr.Users, user.Name)
 			go func() {
-				srvr.Input <- Output{
-					Nickname: defaultName,
-					Msgtext: fmt.Sprintf("%s has left", user.Name),
+				srvr.Input <- Message{
+					Nickname: "System Message",
+					Msgtext:  fmt.Sprintf("%s has left", user.Name),
 				}
 
 			}()
 
-		case msg := <- srvr.Input: 
-			for _, user := range srvr.Users{
-				select{
+		case msg := <-srvr.Input:
+			for _, user := range srvr.Users {
+				select {
 				case user.Output <- msg:
 				default:
 				}
@@ -74,76 +72,78 @@ func (srvr *Server) Run(){
 	}
 }
 
-func handleConn(srvr *Server, conn  net.Conn) (
+func handleConn(srvr *Server, conn net.Conn) {
 	defer conn.Close()
 	scanner := bufio.NewScanner(conn)
-	scanner.Scan()
+	//scanner.Scan()
 	user := User{
-		Nickname: defaultName,
-		Output: make(chan Msgtext, 10),
+		Name:   defaultName,
+		Output: make(chan Message, 10),
 	}
 	srvr.Join <- user
-	defer func(){
+	defer func() {
 		srvr.Leave <- user
-	}{}
-	go func(){
-		for scanner.Scan(){
-			ln := scanner.Msgtext()
-			srvr.Input <- Msgtext(user.Nickname, ln)
+	}()
+	go func() {
+		for scanner.Scan() {
+			ln := scanner.Text()
+			srvr.Input <- Message{user.Name, ln}
 		}
 	}()
 
-	fir 
+	//write to connection
+	for msg := range user.Output {
+		if msg.Nickname != user.Name {
+			_, err := io.WriteString(conn, msg.Nickname+": "+msg.Msgtext+"\n")
+			if err != nil {
+				break
+			}
+		}
+	}
+}
 
-//func changeNick(x,y,z?){
-
-//}
-
-//}
-
-func (n *Newname) SetName(Name string){
+func (n *Newname) SetName(Name string) {
 	n.Name = Name
 	//user := User{
 	//	Name:	scanner.Text(),
 	//	Output:	make(chan Message, 10),
-	}
-
-func (n Newname) Name() string{
-	return n.name
 }
 
-func changeNick(newname string){
+func (n Newname) GetName() string {
+	return n.Name
+}
+
+func changeNick(newname string) {
 	n := Newname{}
 	n.SetName(newname)
-	nn := n.Name()
+	nn := n.GetName()
 	fmt.Println(nn)
 }
 
 //func register(x,y,z?){
 //}
 
-func main(){
+func main() {
 	server, err := net.Listen("tcp", ":8080")
-	if err !=nil {
+	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer server.Close()
 
-	mainServer := &MainServer{
-		Users
-		Join
-		Leave
-		Input
+	mainServer := &Server{
+		Users: make(map[string]User),
+		Join:  make(chan User),
+		Leave: make(chan User),
+		Input: make(chan Message),
+	}
 
 	go mainServer.Run()
 
 	for {
-		conn, err:= server
-
-
-
-		go handleConn(chatServer, conn)
+		conn, err := server.Accept()
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		go handleConn(mainServer, conn)
 	}
 }
-}
-
