@@ -17,6 +17,14 @@ import (
 	"log"
 )
 
+var ServerName string = "Server"
+var defaultName string = "GuestNNN"
+
+
+type Newname struct {
+	Name string
+}
+
 type User struct {
 	Name string
 	Output chan Msg
@@ -41,7 +49,7 @@ func (srvr *Server) Run(){
 			srvr.User[user.Name] = user
 			go func() {
 				srvr.Input <- Message{
-					Nickname: "GuestNNN",
+					Nickname: defaultName,
 					Msgtext: fmt.Sprintf("%s has joined", user.Name),
 				}
 			}()
@@ -49,7 +57,7 @@ func (srvr *Server) Run(){
 			delete(srvr.Users, user.Name)
 			go func() {
 				srvr.Input <- Output{
-					Nickname: "GuestNNN",
+					Nickname: defaultName,
 					Msgtext: fmt.Sprintf("%s has left", user.Name),
 				}
 
@@ -68,14 +76,54 @@ func (srvr *Server) Run(){
 
 func handleConn(srvr *Server, conn  net.Conn) (
 	defer conn.Close()
+	scanner := bufio.NewScanner(conn)
+	scanner.Scan()
+	user := User{
+		Nickname: defaultName,
+		Output: make(chan Msgtext, 10),
+	}
+	srvr.Join <- user
+	defer func(){
+		srvr.Leave <- user
+	}{}
+	go func(){
+		for scanner.Scan(){
+			ln := scanner.Msgtext()
+			srvr.Input <- Msgtext(user.Nickname, ln)
+		}
+	}()
 
+	fir 
 
-func changeNick
+//func changeNick(x,y,z?){
 
-func register
+//}
+
+//}
+
+func (n *Newname) SetName(Name string){
+	n.Name = Name
+	//user := User{
+	//	Name:	scanner.Text(),
+	//	Output:	make(chan Message, 10),
+	}
+
+func (n Newname) Name() string{
+	return n.name
+}
+
+func changeNick(newname string){
+	n := Newname{}
+	n.SetName(newname)
+	nn := n.Name()
+	fmt.Println(nn)
+}
+
+//func register(x,y,z?){
+//}
 
 func main(){
-	server, err := net.Listen("tcp", ":9011")
+	server, err := net.Listen("tcp", ":8080")
 	if err !=nil {
 		log.Fatalln(err.Error())
 	}
