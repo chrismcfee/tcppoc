@@ -1,3 +1,2 @@
 - list of users to be displayed on login
-- functionality to change nick
 - registration

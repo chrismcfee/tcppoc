@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"strings"
 )
 
 var ServerName string = "Server"
@@ -49,6 +50,34 @@ func guestassignname(guestname string) (guest string) {
 	guestid := rand.Intn(999)
 	guestname = (prefixguestname + strconv.Itoa(guestid))
 	return guestname
+}
+
+func (n *Newname) SetName(Name string) {
+	n.Name = Name
+	//user := User{
+	//	Name:	scanner.Text(),
+	//	Output:	make(chan Message, 10),
+}
+
+func (n Newname) GetName() string {
+	return n.Name
+}
+
+func swap(x, y string) (string, string) {
+	return y, x
+}
+
+func changeNick(input string, nickprefix string) (changednick string) {
+	//fmt.Println(input)
+	//newname = strings.TrimPrefix(input, "/nick ")
+	//n := Newname{}
+	//n.SetName(newname)
+	//nn := n.GetName()
+	//fmt.Println(nn)
+	//io.WriteString(conn, newname)
+	//fmt.Println(newname)
+	changednick = strings.TrimPrefix(input, "/nick ")
+	return changednick
 }
 
 func (srvr *Server) Run() {
@@ -139,7 +168,20 @@ func handleConn(srvr *Server, conn net.Conn) {
 	go func() {
 		for scanner.Scan() {
 			ln := scanner.Text()
-			srvr.Input <- Message{user.Name, ln}
+			nickprefix := `/nick`
+			//fmt.Println(ln)
+			if strings.HasPrefix(ln, nickprefix) {
+				nn := changeNick(ln, nickprefix)
+				io.WriteString(conn, "Changed nickname. ")
+				io.WriteString(conn, "Nickname changed to: ")
+				io.WriteString(conn, nn)
+				user.Name = nn
+			} else if strings.HasPrefix(ln, "/register") {
+				//call register fn
+				io.WriteString(conn, "register nick")
+			} else {
+				srvr.Input <- Message{user.Name, ln}
+			}
 		}
 	}()
 
@@ -152,24 +194,6 @@ func handleConn(srvr *Server, conn net.Conn) {
 			}
 		}
 	}
-}
-
-func (n *Newname) SetName(Name string) {
-	n.Name = Name
-	//user := User{
-	//	Name:	scanner.Text(),
-	//	Output:	make(chan Message, 10),
-}
-
-func (n Newname) GetName() string {
-	return n.Name
-}
-
-func changeNick(newname string) {
-	n := Newname{}
-	n.SetName(newname)
-	nn := n.GetName()
-	fmt.Println(nn)
 }
 
 //func register(x,y,z?){
