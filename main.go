@@ -74,19 +74,45 @@ func (srvr *Server) Run() {
 
 func handleConn(srvr *Server, conn net.Conn) {
 	defer conn.Close()
+	//customusername := defaultName
+	io.WriteString(conn, "Welcome to the chat server!")
+	//io.WriteString(conn, "Use default userame? Y/N")
+	//duscanner := bufio.NewScanner(conn)
+	//duscanner.Scan()
+	//if duscanner.Text == "Y"{
+	//	customusername = defaultName
+	//}
+	//else if duscanner.Text == "N"{
+	//	io.WriteString(conn, "Enter username:")
+	//ryb enteeruseername fn
+	//}
+	//else {
+	//	io.WriteString(conn, "Not valid entry so defaulting to default username")
+	//		customusername = defaultName
+	//
+	io.WriteString(conn, "Enter username:")
 	scanner := bufio.NewScanner(conn)
-	//scanner.Scan()
+	scanner.Scan()
+	//if len(scanner.Text()) == 0 {
+	//	user := User{
+	//		Name:   defaultName,
+	//		Output: make(chan Message, 10),
+	//	}
+	//} else {
 	user := User{
-		Name:   defaultName,
+		Name:   scanner.Text(),
 		Output: make(chan Message, 10),
 	}
+	//}
 	srvr.Join <- user
-
-	//print list of users connected to server
+	//print all users
+	//for _, users
 
 	defer func() {
 		srvr.Leave <- user
 	}()
+
+	//read from conn
 	go func() {
 		for scanner.Scan() {
 			ln := scanner.Text()
@@ -127,7 +153,7 @@ func changeNick(newname string) {
 //}
 
 func main() {
-	server, err := net.Listen("tcp", ":9000")
+	server, err := net.Listen("tcp", ":9009")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
