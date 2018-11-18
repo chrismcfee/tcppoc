@@ -81,6 +81,9 @@ func handleConn(srvr *Server, conn net.Conn) {
 		Output: make(chan Message, 10),
 	}
 	srvr.Join <- user
+
+	//print list of users connected to server
+
 	defer func() {
 		srvr.Leave <- user
 	}()
@@ -124,7 +127,7 @@ func changeNick(newname string) {
 //}
 
 func main() {
-	server, err := net.Listen("tcp", ":8080")
+	server, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
