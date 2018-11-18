@@ -186,6 +186,9 @@ func handleConn(srvr *Server, conn net.Conn) {
 	}()
 
 	//write to connection
+	//for users.names := range user.Output {
+	//	io.WriteString(usernames)
+	//}
 	for msg := range user.Output {
 		if msg.Nickname != user.Name {
 			_, err := io.WriteString(conn, msg.Nickname+": "+msg.Msgtext+"\n")

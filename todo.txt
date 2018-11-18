@@ -1,2 +1,2 @@
-- list of users to be displayed on login
-- registration
+- list of users to be displayed on connection
+- registration of nick with password
