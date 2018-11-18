@@ -1,4 +1,3 @@
 - list of users to be displayed on login
-- make nick on login defaultnick
 - functionality to change nick
 - registration

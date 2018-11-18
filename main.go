@@ -13,11 +13,15 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net"
+	"strconv"
 )
 
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
+
+//var guest string = "Guest"
 
 type Newname struct {
 	Name string
@@ -38,6 +42,13 @@ type Server struct {
 	Join  chan User
 	Leave chan User
 	Input chan Message
+}
+
+func guestassignname(guestname string) (guest string) {
+	prefixguestname := "Guest"
+	guestid := rand.Intn(999)
+	guestname = (prefixguestname + strconv.Itoa(guestid))
+	return guestname
 }
 
 func (srvr *Server) Run() {
@@ -75,7 +86,6 @@ func (srvr *Server) Run() {
 func handleConn(srvr *Server, conn net.Conn) {
 	defer conn.Close()
 	//customusername := defaultName
-	io.WriteString(conn, "Welcome to the chat server!")
 	//io.WriteString(conn, "Use default userame? Y/N")
 	//duscanner := bufio.NewScanner(conn)
 	//duscanner.Scan()
@@ -90,9 +100,10 @@ func handleConn(srvr *Server, conn net.Conn) {
 	//	io.WriteString(conn, "Not valid entry so defaulting to default username")
 	//		customusername = defaultName
 	//
-	io.WriteString(conn, "Enter username:")
-	scanner := bufio.NewScanner(conn)
-	scanner.Scan()
+	//io.WriteString(conn, "Enter username:")
+	guest := "Guest"
+	//scanner := bufio.NewScanner(conn)
+	//scanner.Scan()
 	//if len(scanner.Text()) == 0 {
 	//	user := User{
 	//		Name:   defaultName,
@@ -100,13 +111,25 @@ func handleConn(srvr *Server, conn net.Conn) {
 	//	}
 	//} else {
 	user := User{
-		Name:   scanner.Text(),
+		Name:   guestassignname(guest),
 		Output: make(chan Message, 10),
 	}
+
 	//}
 	srvr.Join <- user
 	//print all users
 	//for _, users
+
+	//for all strings in the map of users (user has a string called name and we need to print all names of the map)
+	//for
+	//case msg := <-srvr.Input:
+	//	for _, user := range srvr.Users {
+	//		select {
+	//		case user.Output <- msg:
+	//		default:
+
+	scanner := bufio.NewScanner(conn)
+	//scanner.Scan()
 
 	defer func() {
 		srvr.Leave <- user
