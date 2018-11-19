@@ -104,9 +104,9 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 		Name:   guestassignname(guest),
 		Output: make(chan Message, 10),
 	}
-
+	newuser := user.Name
 	srvr.Join <- user
-	listofusers := listallusers(Users, userlist)
+	listofusers := listallusers(Users, userlist, newuser)
 	io.WriteString(conn, listofusers)
 
 	scanner := bufio.NewScanner(conn)
@@ -127,19 +127,18 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
 				user.Name = nn
-				listofusers = listallusers(Users, userlist)
+				listofusers = listallusers(Users, userlist, nn)
 				//io.WriteString(conn, listofusers)
 				//listofusers = listallusers(Users)
 			} else if strings.HasPrefix(ln, "/register") {
 				//call register fn
-				rr := registerNick(ln, registrationPrefix, registrationPassword)
+				//rr := registerNick(ln, registrationPrefix, registrationPassword)
 				//io.WriteString
-				//io.WriteString(conn, "register nick")
+				io.WriteString(conn, "register nick")
 			} else if strings.HasPrefix(ln, "/login") {
-				ll :=loginNick(ln, loginPrefix, loginPassword)
-				//io.WriteString
-			}
-			else {
+				//ll := loginNick(ln, loginPrefix, loginPassword)
+				io.WriteString(conn, "login")
+			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
 		}
