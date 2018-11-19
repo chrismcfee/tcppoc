@@ -130,19 +130,19 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 				listofusers = listallusers(Users, userlist)
 				//io.WriteString(conn, listofusers)
 				//listofusers = listallusers(Users)
-			} else if strings.HasPrefix(ln, "/register") {
+			} //else if strings.HasPrefix(ln, "/register") {
 				//call register fn
-				rr := registerNick(ln, registrationPrefix, registrationPassword)
+				//rr := registerNick(ln, registrationPrefix, registrationPassword)
 				//io.WriteString
 				//io.WriteString(conn, "register nick")
-			} else if strings.HasPrefix(ln, "/login") {
-				ll :=loginNick(ln, loginPrefix, loginPassword)
+		//	} //else if strings.HasPrefix(ln, "/login") {
+		//		ll :=loginNick(ln, loginPrefix, loginPassword)
 				//io.WriteString
-			}
+		//	}
 			else {
 				srvr.Input <- Message{user.Name, ln}
 			}
-		}
+	//	}
 	}()
 
 	//write to connection
@@ -200,3 +200,4 @@ func main() {
 		go handleConn(mainServer, conn, mainServer.Users, userlist)
 	}
 }
+

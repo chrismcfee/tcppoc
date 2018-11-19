@@ -1,2 +1,3 @@
-- list of users to be displayed on connection
+- fix list of users displayed on connection
 - registration of nick with password
+- login of nick with password
