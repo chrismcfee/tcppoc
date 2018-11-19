@@ -1,9 +1,7 @@
 /*
-
 Task: Implement telnet chat server.
 Description: Implement a TCP server application performing as a chat server. Clients should be able to connect to the listening port using plaintext protocol and be able to communicate with each other. Messages are separated by <LF>, when connected user should be presented with a list of users currently online, everyone see messages from everyone, server should support /nick <nickname> command for users to be able to redefine the default auto-assigned nickname "GuestNNN" and /register command for users to be able to protect their nickname from being taken by other user with a password.
 Language choice: Go, C++.
-
 */
 
 package main
@@ -43,6 +41,37 @@ type Server struct {
 	Join  chan User
 	Leave chan User
 	Input chan Message
+}
+
+type MapTwo map[string]int
+
+func (m MapTwo) keys() []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
+func listallusers(Users map[string]User) (listofusers string) {
+	listofusers = "Users online: "
+	//Users: make(map[string]User),
+	//var m map[int]string
+	//var keys []int
+	//for l := range Users {
+	//	keys = append(keys, k)
+	//	}
+	for _, u := range Users {
+		//io.WriteString("User:", k, "Value:", m[k])
+		listofusers = listofusers + u
+	}
+	//for _, k := range keys {
+	//	fmt.Println("Key:", k, "Value:", m[k])
+	//	}
+	io.WriteString(conn, listofusers)
+	return listofusers
 }
 
 func guestassignname(guestname string) (guest string) {
@@ -146,9 +175,10 @@ func handleConn(srvr *Server, conn net.Conn) {
 
 	//}
 	srvr.Join <- user
+
 	//print all users
 	//for _, users
-
+	listallusers(Users)
 	//for all strings in the map of users (user has a string called name and we need to print all names of the map)
 	//for
 	//case msg := <-srvr.Input:
@@ -177,6 +207,7 @@ func handleConn(srvr *Server, conn net.Conn) {
 				io.WriteString(conn, nn)
 				user.Name = nn
 			} else if strings.HasPrefix(ln, "/register") {
+
 				//call register fn
 				io.WriteString(conn, "register nick")
 			} else {
@@ -199,8 +230,21 @@ func handleConn(srvr *Server, conn net.Conn) {
 	}
 }
 
-//func register(x,y,z?){
-//}
+func register(something1 string, something2 string) (something3 string) {
+	registerednick := strings.TrimPrefix(input, "/register ")
+	//fmt.Println(input)
+	//newname = strings.TrimPrefix(input, "/nick ")
+	//n := Newname{}
+	//n.SetName(newname)
+	//nn := n.GetName()
+	//fmt.Println(nn)
+	//io.WriteString(conn, newname)
+	//fmt.Println(newname)
+
+	//registration: (ideas?)
+	changednick = strings.TrimPrefix(input, "/nick ")
+	return changednick
+}
 
 func main() {
 	server, err := net.Listen("tcp", ":9009")
