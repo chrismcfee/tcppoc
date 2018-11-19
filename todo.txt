@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 - list of users to be displayed on connection
 -- update this list based on when user changes his/her nick
 -- remove old nick when user changes his/her nick
-=======
-- fix list of users displayed on connection
->>>>>>> 64410827b1dcc3149a5ca2fd80a9dacd2a152e67
 - registration of nick with password
-- login of nick with password
