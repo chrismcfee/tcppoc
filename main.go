@@ -41,12 +41,13 @@ type Server struct {
 	Input chan Message
 }
 
-func listallusers(Users map[string]User, userlist string) (listofusers_result string) {
+func listallusers(Users map[string]User, userlist string, newuser string) (listofusers_result string) {
 	//userlist = userlist + cur_list
 	var curlist string
 	for _, u := range Users {
 		curlist = (" " + u.Name + " ")
 	}
+	curlist = curlist + " " + newuser
 	listofusers_result = userlist + curlist
 	//io.WriteString(conn, listofusers)
 	//fmt.Println(listofusersresult)
@@ -104,10 +105,10 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 		Name:   guestassignname(guest),
 		Output: make(chan Message, 10),
 	}
-
+	//newuser := user.Name
 	srvr.Join <- user
-	listofusers := listallusers(Users, userlist)
-	io.WriteString(conn, listofusers)
+	//listofusers := listallusers(Users, userlist, newuser)
+	//io.WriteString(conn, listofusers)
 
 	scanner := bufio.NewScanner(conn)
 
@@ -127,22 +128,24 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
 				user.Name = nn
-				listofusers = listallusers(Users, userlist)
+				//listofusers = listallusers(Users, userlist, nn)
+				//fmt.Println(listofusers)
 				//io.WriteString(conn, listofusers)
 				//listofusers = listallusers(Users)
-			} //else if strings.HasPrefix(ln, "/register") {
+				//else if strings.HasPrefix(ln, "/register") {
 				//call register fn
 				//rr := registerNick(ln, registrationPrefix, registrationPassword)
 				//io.WriteString
 				//io.WriteString(conn, "register nick")
-		//	} //else if strings.HasPrefix(ln, "/login") {
-		//		ll :=loginNick(ln, loginPrefix, loginPassword)
+				//	} //else if strings.HasPrefix(ln, "/login") {
+				//		ll :=loginNick(ln, loginPrefix, loginPassword)
 				//io.WriteString
-		//	}
-			else {
+				//	}
+			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
-	//	}
+		}
+		//	}
 	}()
 
 	//write to connection
@@ -200,4 +203,3 @@ func main() {
 		go handleConn(mainServer, conn, mainServer.Users, userlist)
 	}
 }
-
