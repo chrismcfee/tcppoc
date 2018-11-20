@@ -8,7 +8,6 @@ package main
 
 import (
 	"bufio"
-	//"container/list"
 	"fmt"
 	"io"
 	"log"
@@ -20,33 +19,6 @@ import (
 
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
-
-//type userList struct {
-//	Users map[string]User
-
-//package main
-
-//import (
-///		"container/list"
-//			"fmt"
-//		)
-
-//		func main() {
-// Create a new list and put some numbers in it.
-//	l := list.New()
-//		e4 := l.PushBack(4)
-//			e1 := l.PushFront(1)
-//				l.InsertBefore(3, e4)
-//					l.InsertAfter(2, e1)
-
-// Iterate through list and print its contents.
-//							for e := l.Front(); e != nil; e = e.Next() {
-//										fmt.Println(e.Value)
-//											}
-//
-//										}
-
-//}
 
 type Newname struct {
 	Name string
@@ -69,44 +41,17 @@ type Server struct {
 	Input chan Message
 }
 
-//type UserList struct {
-//Userslice := make([]string, 0, 999)
-//}
-
 func addusertolist(UserSlice []string, addedname string) (newlist []string) {
 	newlist = append(UserSlice, addedname)
 	return newlist
 }
 
-//func deluserfromlist(names, userList, deletedname string) {
-
-//	a := []string{"A", "B", "C", "D", "E"}
-//	i := 2
-//
-// Remove the element at index i from a.
-//	copy(a[i:], a[i+1:]) // Shift a[i+1:] left one index.
-//	a[len(a)-1] = ""     // Erase last element (write zero value).
-//	a = a[:len(a)-1]     // Truncate slice.
-
-//	fmt.Println(a) // [A B D E]
-
-//names.Userslice = append(names.Userslice[:i
-///
-//	a = append(a[:i], a[i+1:]...)
-// or
-//	a = a[:i+copy(a[i:], a[i+1:])]
-//
-//}
-
 func listallusers(Users map[string]User) (listofusers_result string) {
-	//userlist = userlist + cur_list
 	var curlist string
 	for _, u := range Users {
 		curlist = (" " + u.Name + " ")
 	}
 	listofusers_result = curlist
-	//io.WriteString(conn, listofusers)
-	//fmt.Println(listofusersresult)
 	return listofusers_result
 }
 
@@ -166,6 +111,15 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, UserSlice []
 	//listofusers := listallusers(Users, userlist, newuser)
 	//io.WriteString(conn, listofusers)
 
+	//for index, each := range UserSlice {
+	//	fmt.Printf("value [%d] is [%s]\n", index, each)
+	//}
+	UserSlice = addusertolist(UserSlice, user.Name)
+
+	for index, each := range UserSlice {
+		fmt.Printf("value [%d] is [%s]\n", index, each)
+	}
+
 	scanner := bufio.NewScanner(conn)
 
 	defer func() {
@@ -189,7 +143,8 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, UserSlice []
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
 				UserSlice = addusertolist(UserSlice, nn)
-				//user.Name = nn
+				//io.WriteString(conn, UserSlice[1])
+				user.Name = nn
 				//userlist = userlist + user.Name
 				//io.WriteString(conn, userlist)
 				//listofusers = listallusers(Users, userlist, nn)
@@ -214,9 +169,10 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, UserSlice []
 	//	fmt.Printf("%d th element of UsersSlice is %.2f\n", i, UserSlice[i])
 	//}
 
-	for index, each := range UserSlice {
-		fmt.Printf("value [%d] is [%s]\n", index, each)
-	}
+	//for index, each := range UserSlice {
+	//	fmt.Printf("value [%d] is [%s]\n", index, each)
+	//}
+	//UserSlice = addusertolist(UserSlice, user.Name)
 
 	//for _, UserSlice
 	for msg := range user.Output {
