@@ -8,6 +8,7 @@ package main
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"io"
 	"log"
@@ -19,6 +20,10 @@ import (
 
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
+
+type userList struct {
+	Users map[string]User
+}
 
 type Newname struct {
 	Name string
@@ -41,13 +46,21 @@ type Server struct {
 	Input chan Message
 }
 
-func listallusers(Users map[string]User, userlist string) (listofusers_result string) {
+func addusertolist() {
+
+}
+
+func deluserfromlist() {
+
+}
+
+func listallusers(Users map[string]User) (listofusers_result string) {
 	//userlist = userlist + cur_list
 	var curlist string
 	for _, u := range Users {
 		curlist = (" " + u.Name + " ")
 	}
-	listofusers_result = userlist + curlist
+	listofusers_result = curlist
 	//io.WriteString(conn, listofusers)
 	//fmt.Println(listofusersresult)
 	return listofusers_result
@@ -104,10 +117,10 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 		Name:   guestassignname(guest),
 		Output: make(chan Message, 10),
 	}
-	newuser := user.Name
+	//newuser := user.Name
 	srvr.Join <- user
-	listofusers := listallusers(Users, userlist, newuser)
-	io.WriteString(conn, listofusers)
+	//listofusers := listallusers(Users, userlist, newuser)
+	//io.WriteString(conn, listofusers)
 
 	scanner := bufio.NewScanner(conn)
 
@@ -117,17 +130,22 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 
 	//read from conn
 	go func() {
+		//io.WriteString(conn, userlist)
 		//io.WriteString(conn, listofusers)
 		for scanner.Scan() {
 			ln := scanner.Text()
 			nickprefix := `/nick`
+			newUser := user.Name
+			userlist = userlist + newUser
 			if strings.HasPrefix(ln, nickprefix) {
 				nn := changeNick(ln, nickprefix)
 				io.WriteString(conn, "Changed nickname. ")
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
 				user.Name = nn
-				listofusers = listallusers(Users, userlist, nn)
+				userlist = userlist + user.Name
+				//io.WriteString(conn, userlist)
+				//listofusers = listallusers(Users, userlist, nn)
 				//io.WriteString(conn, listofusers)
 				//listofusers = listallusers(Users)
 			} else if strings.HasPrefix(ln, "/register") {
@@ -143,7 +161,7 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, userlist str
 			}
 		}
 	}()
-
+	io.WriteString(conn, userlist)
 	//write to connection
 	for msg := range user.Output {
 		if msg.Nickname != user.Name {
@@ -184,18 +202,22 @@ func main() {
 		Leave: make(chan User),
 		Input: make(chan Message),
 	}
+
+	//nickList := &userList{
+	//	Users:
 	//var listofuserst string
 	//listofuserst = listallusers(mainServer.Users, listofuserst)
 
 	go mainServer.Run()
 
 	userlist := "Users online: "
+	usersonline := userlist + listallusers(mainServer.Users)
 
 	for {
 		conn, err := server.Accept()
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		go handleConn(mainServer, conn, mainServer.Users, userlist)
+		go handleConn(mainServer, conn, mainServer.Users, usersonline)
 	}
 }
