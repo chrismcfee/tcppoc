@@ -1,4 +1,2 @@
-- list of users to be displayed on connection
--- update this list based on when user changes his/her nick
--- remove old nick when user changes his/her nick
+- remove old nick when user changes his/her nick or disconnects
 - registration of nick with password

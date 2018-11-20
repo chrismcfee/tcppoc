@@ -20,6 +20,8 @@ import (
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
 
+var UserSlice = make([]string, 0, 999)
+
 type Newname struct {
 	Name string
 }
@@ -41,9 +43,8 @@ type Server struct {
 	Input chan Message
 }
 
-func addusertolist(UserSlice []string, addedname string) (newlist []string) {
-	newlist = append(UserSlice, addedname)
-	return newlist
+func addusertolist(addedname string) {
+	UserSlice = append(UserSlice, addedname)
 }
 
 func listallusers(Users map[string]User) (listofusers_result string) {
@@ -99,22 +100,15 @@ func (srvr *Server) Run() {
 	}
 }
 
-func handleConn(srvr *Server, conn net.Conn, Users map[string]User, UserSlice []string) {
+func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 	defer conn.Close()
 	guest := "Guest"
 	user := User{
 		Name:   guestassignname(guest),
 		Output: make(chan Message, 10),
 	}
-	//newuser := user.Name
 	srvr.Join <- user
-	//listofusers := listallusers(Users, userlist, newuser)
-	//io.WriteString(conn, listofusers)
-
-	//for index, each := range UserSlice {
-	//	fmt.Printf("value [%d] is [%s]\n", index, each)
-	//}
-	UserSlice = addusertolist(UserSlice, user.Name)
+	addusertolist(user.Name)
 
 	for index, each := range UserSlice {
 		fmt.Printf("value [%d] is [%s]\n", index, each)
@@ -128,53 +122,26 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User, UserSlice []
 
 	//read from conn
 	go func() {
-		//io.WriteString(conn, userlist)
-		//io.WriteString(conn, listofusers)
 		for scanner.Scan() {
 			ln := scanner.Text()
 			nickprefix := `/nick`
-			//newUser := user.Name
-			//addedname = user.Name
-			UserSlice = addusertolist(UserSlice, user.Name)
-			//userlist = userlist + newUser
+			addusertolist(user.Name)
 			if strings.HasPrefix(ln, nickprefix) {
 				nn := changeNick(ln, nickprefix)
 				io.WriteString(conn, "Changed nickname. ")
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
-				UserSlice = addusertolist(UserSlice, nn)
-				//io.WriteString(conn, UserSlice[1])
+				addusertolist(nn)
 				user.Name = nn
-				//userlist = userlist + user.Name
-				//io.WriteString(conn, userlist)
-				//listofusers = listallusers(Users, userlist, nn)
-				//io.WriteString(conn, listofusers)
-				//listofusers = listallusers(Users)
 			} else if strings.HasPrefix(ln, "/register") {
-				//call register fn
-				//rr := registerNick(ln, registrationPrefix, registrationPassword)
-				//io.WriteString
 				io.WriteString(conn, "register nick")
 			} else if strings.HasPrefix(ln, "/login") {
-				//ll := loginNick(ln, loginPrefix, loginPassword)
 				io.WriteString(conn, "login")
 			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
 		}
 	}()
-	//io.WriteString(conn, userlist)
-	//write to connection
-	//for i := 0; i < len(UserSlice); i++ { //looping from 0 to the length of the array
-	//	fmt.Printf("%d th element of UsersSlice is %.2f\n", i, UserSlice[i])
-	//}
-
-	//for index, each := range UserSlice {
-	//	fmt.Printf("value [%d] is [%s]\n", index, each)
-	//}
-	//UserSlice = addusertolist(UserSlice, user.Name)
-
-	//for _, UserSlice
 	for msg := range user.Output {
 		if msg.Nickname != user.Name {
 			_, err := io.WriteString(conn, msg.Nickname+": "+msg.Msgtext+"\n")
@@ -215,26 +182,15 @@ func main() {
 		Input: make(chan Message),
 	}
 
-	UserSlice := make([]string, 0, 999)
 	UserSlice = append(UserSlice, "Users Online: ")
 
-	//nickList := &userList{
-	//	Users:
-	//var listofuserst string
-	//listofuserst = listallusers(mainServer.Users, listofuserst)
-
 	go mainServer.Run()
-
-	//userlist := "Users online: "
-	//usersonline := userlist + listallusers(mainServer.Users)
-
-	//userlist := make([]string, len(s))
 
 	for {
 		conn, err := server.Accept()
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
-		go handleConn(mainServer, conn, mainServer.Users, UserSlice)
+		go handleConn(mainServer, conn, mainServer.Users)
 	}
 }
