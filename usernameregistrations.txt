@@ -1,7 +1,1 @@
 Password List Format: Username Password 
-kitty kittycat
-rasputin loveroftherussianqueen
-son son3
-h h
-person5 personpw
-person6 person6
