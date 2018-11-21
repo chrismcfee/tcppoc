@@ -233,6 +233,7 @@ func login(input string, username string, loginprefix string) (loginsuccess bool
 	defer f.Close()
 
 	scanfile, err := os.Open("usernameregistrations.txt")
+
 	if err != nil {
 		log.Fatal(err)
 	}
