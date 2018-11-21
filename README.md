@@ -21,5 +21,7 @@ telnet [ip or localhost] 9009
 commands:
 
 /nick to change nick
+
 /login password to login with your password
+
 /register password to register username with password
