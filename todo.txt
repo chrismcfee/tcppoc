@@ -1,1 +1,7 @@
-- lock a name from being /nick'd into if user is login
+-when attempting to login a user, check the map of logged in users
+
+-if user is already in loggedinmap, FAIL
+
+-if user name is not found in loggedinmap and user auth is successful, add user to loggedinmap
+
+- remove user from loggedinmap when connection is dropped (LEAVE)

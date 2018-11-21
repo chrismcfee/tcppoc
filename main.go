@@ -192,6 +192,7 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				lis := login(ln, user.Name, loginprefix)
 				if lis == true {
 					io.WriteString(conn, "Login Successful")
+					addToLoggedInUserMap(assignid(), user.Name)
 				} else {
 					io.WriteString(conn, "Invalid Login Credentials")
 				}
@@ -247,7 +248,17 @@ func register(input string, username string, registerprefix string) {
 
 }
 
-func login(input string, username string, loginprefix string) (loginsuccess bool) {
+func login(input string, username string, loginprefix string) (loginsuccess bool) { //var loggedInUserMap map[string]int
+	/*
+		[not needed]	//pass in map of loggedinusers to this function
+		[done]   If a user is logged in, add the user to the map of logged in users
+		   When attempting to login a user, check the map of logged in users.
+
+		   If user is already logged in: FAIL
+		   If users name is not found in logged in map and user authentication is successful, must add to map
+
+		   REMEMBER THAT WHEN USER LEAVES THEY MUST BE REMOVED
+	*/
 	delimiter := " "
 	logininputpw := strings.TrimPrefix(input, loginprefix)
 
@@ -272,6 +283,12 @@ func login(input string, username string, loginprefix string) (loginsuccess bool
 
 			if rightOfDelimiter == logininputpw {
 				fmt.Println("correct password match for login")
+				addToLoggedInUserMap(assignid(), leftOfDelimiter)
+				fmt.Println("logged in users\n")
+				for k := range loggedInUserMap {
+					fmt.Printf("key[%s] value[%s]\n", k, loggedInUserMap[k])
+				}
+
 				return true
 			} else if rightOfDelimiter != logininputpw {
 				fmt.Println("User trying to login with invalid password")
@@ -322,6 +339,7 @@ func main() {
 	}
 
 	UserMap = make(map[string]int)
+	loggedInUserMap = make(map[string]int)
 	server, err := net.Listen("tcp", ":9009")
 	if err != nil {
 		log.Fatalln(err.Error())
