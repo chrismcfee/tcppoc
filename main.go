@@ -283,13 +283,19 @@ func login(input string, username string, loginprefix string) (loginsuccess bool
 
 			if rightOfDelimiter == logininputpw {
 				fmt.Println("correct password match for login")
-				addToLoggedInUserMap(assignid(), leftOfDelimiter)
-				fmt.Println("logged in users\n")
-				for k := range loggedInUserMap {
-					fmt.Printf("key[%s] value[%s]\n", k, loggedInUserMap[k])
-				}
+				if val, ok := loggedInUserMap[rightOfDelimiter]; ok {
+					addToLoggedInUserMap(assignid(), leftOfDelimiter)
+					s := strconv.Itoa(val)
+					fmt.Println("logged in users\n" + s)
+					for k := range loggedInUserMap {
+						fmt.Printf("key[%s] value[%s]\n", k, loggedInUserMap[k])
+					}
 
-				return true
+					return true
+				} else {
+					fmt.Println("Error: user is already logged in")
+					return false
+				}
 			} else if rightOfDelimiter != logininputpw {
 				fmt.Println("User trying to login with invalid password")
 				return false
