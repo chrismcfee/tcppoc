@@ -1,1 +1,2 @@
-- fix registration bugs
+- add login fn
+-if user is login, prevent users from switching to that username

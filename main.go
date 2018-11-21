@@ -152,8 +152,9 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 	go func() {
 		for scanner.Scan() {
 			ln := scanner.Text()
-			nickprefix := `/nick`
+			nickprefix := `/nick `
 			registerprefix := `/register `
+			loginprefix := `/login `
 			addToUserMap(assignid(), user.Name)
 			if strings.HasPrefix(ln, nickprefix) {
 				nn := changeNick(ln, nickprefix)
@@ -167,7 +168,8 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				register(ln, user.Name, registerprefix)
 				//io.WriteString(conn, "registered name")
 			} else if strings.HasPrefix(ln, "/login") {
-				io.WriteString(conn, "login")
+				//io.WriteString(conn, "login")
+				login(ln, user.Name, loginprefix)
 			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
@@ -218,6 +220,58 @@ func register(input string, username string, registerprefix string) {
 		log.Fatal(err)
 	}
 
+}
+
+func login(input string, username string, loginprefix string) (loginsuccess bool) {
+	delimiter := " "
+	logininputpw := strings.TrimPrefix(input, loginprefix)
+
+	f, err := os.OpenFile("usernameregistrations.txt", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	scanfile, err := os.Open("usernameregistrations.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer scanfile.Close()
+
+	scanner := bufio.NewScanner(scanfile)
+	for scanner.Scan() {
+		leftOfDelimiter := strings.Split(scanner.Text(), delimiter)[0]
+		rightOfDelimiter := strings.Join(strings.Split(scanner.Text(), delimiter)[1:], delimiter)
+		if leftOfDelimiter == username {
+
+			if rightOfDelimiter == logininputpw {
+				fmt.Println("correct password match for login")
+				return true
+			} else if rightOfDelimiter != logininputpw {
+				fmt.Println("User trying to login with invalid password")
+				return false
+			} else {
+				fmt.Println("unexpected thing happened")
+				return false
+			}
+			//fmt.Println("someone attempting to hijack registered account")
+
+			return
+
+			//io.WriteString(conn, "user already registered...")
+		}
+
+	}
+
+	fmt.Println("user not found so login has failed")
+	//if _, err = f.WriteString(username + " " + registrationinput + "\n"); err != nil {
+	//	panic(err)
+	//}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return false
 }
 
 func CreatePasswordFile() {
