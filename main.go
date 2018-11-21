@@ -219,16 +219,8 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 }
 
 func register(input string, username string, registerprefix string) {
-
+	delimiter := " "
 	registrationinput := strings.TrimPrefix(input, registerprefix)
-	//fmt.Println(registrationinput)
-
-	data, err := ioutil.ReadFile("usernameregistrations.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	//fmt.Print(string(data))
 
 	f, err := os.OpenFile("usernameregistrations.txt", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
@@ -236,30 +228,33 @@ func register(input string, username string, registerprefix string) {
 	}
 	defer f.Close()
 
-	if _, err = f.WriteString(username + " " + registrationinput); err != nil {
-		panic(err)
-	}
-
-	data, err = ioutil.ReadFile("usernameregistrations.txt")
+	scanfile, err := os.Open("usernameregistrations.txt")
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
+	}
+	defer scanfile.Close()
+
+	scanner := bufio.NewScanner(scanfile)
+	for scanner.Scan() {
+		leftOfDelimiter := strings.Split(scanner.Text(), delimiter)[0]
+		if leftOfDelimiter == username {
+			fmt.Println("someone attempting to hijack registered account")
+			//io.WriteString(conn, "user already registered...")
+		} else {
+
+			if _, err = f.WriteString(username + " " + registrationinput + "\n"); err != nil {
+				panic(err)
+			}
+
+		}
+		//rightOfDelimiter := strings.Join(strings.Split(scanner.Text(), delimiter)[1:], delimiter)
+		//fmt.Println(leftOfDelimiter)
 	}
 
-	fmt.Print(string(data))
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 
-	//	registerednick := strings.TrimPrefix(input, "/register ")
-	//fmt.Println(input)
-	//newname = strings.TrimPrefix(input, "/nick ")
-	//n := Newname{}
-	//n.SetName(newname)
-	//nn := n.GetName()
-	//fmt.Println(nn)
-	//io.WriteString(conn, newname)
-	//fmt.Println(newname)
-
-	//registration: (ideas?)
-	//	changednick = strings.TrimPrefix(input, "/nick ")
-	//	return changednick
 }
 
 func CreatePasswordFile() {

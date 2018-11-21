@@ -1,1 +1,1 @@
-- registration of nick with password
+- fix registration bugs
