@@ -14,7 +14,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	//"os"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -230,8 +230,27 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 //	return changednick
 //}
 
-func main() {
+func CreatePasswordFile() {
+	file, err := os.Create("usernameregistrations.txt")
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
 
+	defer file.Close()
+	len, err := file.WriteString("Password List Format: Username Password ")
+	if err != nil {
+		log.Fatalf("failed writing to file: %s", err)
+	}
+
+	fmt.Printf("\nLength: %d bytes", len)
+	fmt.Printf("\nFile Name: %s", file.Name())
+}
+
+func main() {
+	if _, err := os.Stat("./usernameregistrations.txt"); os.IsNotExist(err) {
+		// path/to/whatever does not exist
+		CreatePasswordFile()
+	}
 	//testing write to file here
 	//f1 := []byte("hello\ngo\n")
 	//err := ioutil.WriteFile("/tmp/dat1", f1, 0644)
@@ -245,6 +264,11 @@ func main() {
 	//check(err)
 	//fmt.Printf("wrote %d bytes to file\n", n2)
 	//f.Sync()
+
+	//passwordlisttitle := "Password List: "
+
+	//fileHandle, _ := os.
+
 	UserMap = make(map[string]int)
 	//UserMap["Users Online: "] = assignid()
 	server, err := net.Listen("tcp", ":9009")
