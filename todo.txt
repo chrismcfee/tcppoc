@@ -1,5 +1,1 @@
--if user is already in loggedinmap, FAIL
-
--if user name is not found in loggedinmap and user auth is successful, add user to loggedinmap
-
-- remove user from loggedinmap when connection is dropped (LEAVE)
+- checl to see if user is removed from loggedinmap when connection is dropped (LEAVE)

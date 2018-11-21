@@ -120,6 +120,23 @@ func (srvr *Server) Run() {
 		case user := <-srvr.Leave:
 			delete(srvr.Users, user.Name)
 			delFromUserMap(user.Name)
+
+			//if user is in loggedinmap do this:
+			iss, ok := loggedInUserMap[user.Name]
+			if ok {
+				fmt.Println(iss)
+				delFromLoggedInUserMap(user.Name)
+			}
+			//delFromLoggedInUserMap(user.Name)
+
+			//dict := map[string]int {"foo" : 1, "bar" : 2}
+			//value, ok := dict["baz"]
+			//if ok {
+			//	fmt.Println("value: ", value)
+			//} else {
+			//	fmt.Println("key not found")
+			//}
+
 			go func() {
 				srvr.Input <- Message{
 					Nickname: "System Message",
@@ -193,6 +210,7 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				if lis == true {
 					io.WriteString(conn, "Login Successful")
 					addToLoggedInUserMap(assignid(), user.Name)
+					lis = false
 				} else {
 					io.WriteString(conn, "Invalid Login Credentials")
 				}
@@ -283,18 +301,28 @@ func login(input string, username string, loginprefix string) (loginsuccess bool
 
 			if rightOfDelimiter == logininputpw {
 				fmt.Println("correct password match for login")
-				if val, ok := loggedInUserMap[rightOfDelimiter]; ok {
+				val, ok := loggedInUserMap[leftOfDelimiter]
+				if ok {
+					fmt.Println(val)
+					fmt.Println("Error: User is already logged in")
+					return false
+				} else {
+					//addToLoggedInUserMap(assignid(), leftOfDelimiter)
+					//s := strconv.Itoa(val)
+					//fmt.Println("logged in users\n" + s)
+					//for k := range loggedInUserMap {
+					//	fmt.Printf("key[%s] value[%s]\n", k, loggedInUserMap[k])
+					//}
+
+					//	return false
+					//fmt.Println("Error: user is already logged in")
 					addToLoggedInUserMap(assignid(), leftOfDelimiter)
 					s := strconv.Itoa(val)
 					fmt.Println("logged in users\n" + s)
 					for k := range loggedInUserMap {
 						fmt.Printf("key[%s] value[%s]\n", k, loggedInUserMap[k])
 					}
-
 					return true
-				} else {
-					fmt.Println("Error: user is already logged in")
-					return false
 				}
 			} else if rightOfDelimiter != logininputpw {
 				fmt.Println("User trying to login with invalid password")
