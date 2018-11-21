@@ -10,7 +10,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	//"io/ioutil"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -127,6 +127,7 @@ func (srvr *Server) Run() {
 			}()
 		case user := <-srvr.Leave:
 			delete(srvr.Users, user.Name)
+			delFromUserMap(user.Name)
 			go func() {
 				srvr.Input <- Message{
 					Nickname: "System Message",
@@ -180,6 +181,7 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 		for scanner.Scan() {
 			ln := scanner.Text()
 			nickprefix := `/nick`
+			registerprefix := `/register `
 			//addusertolist(user.Name)
 			addToUserMap(assignid(), user.Name)
 			if strings.HasPrefix(ln, nickprefix) {
@@ -192,7 +194,9 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				//addusertolist(nn)
 				user.Name = nn
 			} else if strings.HasPrefix(ln, "/register") {
-				io.WriteString(conn, "register nick")
+				//io.WriteString(conn, "registered username")
+				register(ln, user.Name, registerprefix)
+				io.WriteString(conn, "registered name")
 			} else if strings.HasPrefix(ln, "/login") {
 				io.WriteString(conn, "login")
 				//} //else if strings.HasPrefix(ln, "/names") {
@@ -214,21 +218,49 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 	}
 }
 
-//func register(something1 string, something2 string) (something3 string) {
-//	registerednick := strings.TrimPrefix(input, "/register ")
-//fmt.Println(input)
-//newname = strings.TrimPrefix(input, "/nick ")
-//n := Newname{}
-//n.SetName(newname)
-//nn := n.GetName()
-//fmt.Println(nn)
-//io.WriteString(conn, newname)
-//fmt.Println(newname)
+func register(input string, username string, registerprefix string) {
 
-//registration: (ideas?)
-//	changednick = strings.TrimPrefix(input, "/nick ")
-//	return changednick
-//}
+	registrationinput := strings.TrimPrefix(input, registerprefix)
+	//fmt.Println(registrationinput)
+
+	data, err := ioutil.ReadFile("usernameregistrations.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//fmt.Print(string(data))
+
+	f, err := os.OpenFile("usernameregistrations.txt", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	if _, err = f.WriteString(username + " " + registrationinput); err != nil {
+		panic(err)
+	}
+
+	data, err = ioutil.ReadFile("usernameregistrations.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Print(string(data))
+
+	//	registerednick := strings.TrimPrefix(input, "/register ")
+	//fmt.Println(input)
+	//newname = strings.TrimPrefix(input, "/nick ")
+	//n := Newname{}
+	//n.SetName(newname)
+	//nn := n.GetName()
+	//fmt.Println(nn)
+	//io.WriteString(conn, newname)
+	//fmt.Println(newname)
+
+	//registration: (ideas?)
+	//	changednick = strings.TrimPrefix(input, "/nick ")
+	//	return changednick
+}
 
 func CreatePasswordFile() {
 	file, err := os.Create("usernameregistrations.txt")
@@ -237,7 +269,7 @@ func CreatePasswordFile() {
 	}
 
 	defer file.Close()
-	len, err := file.WriteString("Password List Format: Username Password ")
+	len, err := file.WriteString("Password List Format: Username Password \n")
 	if err != nil {
 		log.Fatalf("failed writing to file: %s", err)
 	}
@@ -246,11 +278,57 @@ func CreatePasswordFile() {
 	fmt.Printf("\nFile Name: %s", file.Name())
 }
 
+func TestAddLine() {
+	//file, err:=
+	//defer file.Close()
+	//len, err := file.WriteString
+	//mydata := []byte("test\n")
+
+	// the WriteFile method returns an error if unsuccessful
+	//err := ioutil.WriteFile("usernameregistrations.txt", mydata, 0777)
+	// handle this error
+	//if err != nil {
+	// print it out
+	//	fmt.Println(err)
+	//}
+
+	data, err := ioutil.ReadFile("usernameregistrations.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//fmt.Print(string(data))
+
+	f, err := os.OpenFile("usernameregistrations.txt", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	if _, err = f.WriteString("adding line!\n"); err != nil {
+		panic(err)
+	}
+
+	data, err = ioutil.ReadFile("usernameregistrations.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Print(string(data))
+
+}
 func main() {
 	if _, err := os.Stat("./usernameregistrations.txt"); os.IsNotExist(err) {
 		// path/to/whatever does not exist
 		CreatePasswordFile()
 	}
+
+	//if _, err := os.Stat("./usernameregistrations.txt"); err == nil {
+	//TestAddLine()
+	//	fmt.Println("Username registration file already exists. Continuing...")
+	// path/to/whatever exists
+	//}
+
 	//testing write to file here
 	//f1 := []byte("hello\ngo\n")
 	//err := ioutil.WriteFile("/tmp/dat1", f1, 0644)
