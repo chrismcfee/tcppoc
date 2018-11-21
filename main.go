@@ -10,9 +10,11 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	//"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
+	//"os"
 	"strconv"
 	"strings"
 )
@@ -20,7 +22,16 @@ import (
 var ServerName string = "Server"
 var defaultName string = "GuestNNN"
 
-var UserSlice = make([]string, 0, 999)
+var UserMap map[string]int
+
+//m := make(map[int]string)
+//var UserSlice = make([]string, 0, 999)
+
+//var UserMap map[int]string
+
+//type connID struct {
+//	id int
+//}
 
 type Newname struct {
 	Name string
@@ -43,9 +54,39 @@ type Server struct {
 	Input chan Message
 }
 
-func addusertolist(addedname string) {
-	UserSlice = append(UserSlice, addedname)
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }
+
+func addToUserMap(id int, key string) {
+	UserMap[key] = id
+}
+
+func delFromUserMap(delname string) {
+	delete(UserMap, delname)
+
+	//var sessions =  map[string] chan int{}
+	//var sessions = map[string] chan int{};
+	//sessions["moo"] = make (chan int);
+	//_, ok := sessions["moo"];
+	//if ok {
+	//    delete(sessions, "moo");
+}
+
+//func addusertolist(addedname string) {
+//	UserSlice = append(UserSlice, addedname)
+//}
+
+//func deluserfromlist(deletedname string) {
+//	//a := []string{"A", "B", "C", "D", "E"}
+//	i := len(UserSlice) - 1
+//	UserSlice[i] = UserSlice[(len(UserSlice))-1]
+//	UserSlice[len(UserSlice)-1] = ""
+//	UserSlice = UserSlice[:len(UserSlice)-1]
+//	// Remove the element at index i from userslice
+//}
 
 func listallusers(Users map[string]User) (listofusers_result string) {
 	var curlist string
@@ -61,6 +102,11 @@ func guestassignname(guestname string) (guest string) {
 	guestid := rand.Intn(999)
 	guestname = (prefixguestname + strconv.Itoa(guestid))
 	return guestname
+}
+
+func assignid() (id int) {
+	newid := rand.Intn(999)
+	return newid
 }
 
 func changeNick(input string, nickprefix string) (changednick string) {
@@ -108,10 +154,19 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 		Output: make(chan Message, 10),
 	}
 	srvr.Join <- user
-	addusertolist(user.Name)
+	io.WriteString(conn, "Users Online Now: ")
+	for k := range UserMap {
+		io.WriteString(conn, k)
+		io.WriteString(conn, ",")
+	}
+	//writeString
+	addToUserMap(assignid(), user.Name)
 
-	for index, each := range UserSlice {
-		fmt.Printf("value [%d] is [%s]\n", index, each)
+	//for index, each := range UserSlice {
+	//	fmt.Printf("value [%d] is [%s]\n", index, each)
+	//}
+	for k := range UserMap {
+		fmt.Printf("key[%s] value[%s]\n", k, UserMap[k])
 	}
 
 	scanner := bufio.NewScanner(conn)
@@ -125,18 +180,25 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 		for scanner.Scan() {
 			ln := scanner.Text()
 			nickprefix := `/nick`
-			addusertolist(user.Name)
+			//addusertolist(user.Name)
+			addToUserMap(assignid(), user.Name)
 			if strings.HasPrefix(ln, nickprefix) {
 				nn := changeNick(ln, nickprefix)
+				delFromUserMap(user.Name)
 				io.WriteString(conn, "Changed nickname. ")
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
-				addusertolist(nn)
+				addToUserMap(assignid(), nn)
+				//addusertolist(nn)
 				user.Name = nn
 			} else if strings.HasPrefix(ln, "/register") {
 				io.WriteString(conn, "register nick")
 			} else if strings.HasPrefix(ln, "/login") {
 				io.WriteString(conn, "login")
+				//} //else if strings.HasPrefix(ln, "/names") {
+				//for _, each := range UserSlice {
+				//	io.WriteString(conn, each+" ")
+				//}
 			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
@@ -169,6 +231,22 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 //}
 
 func main() {
+
+	//testing write to file here
+	//f1 := []byte("hello\ngo\n")
+	//err := ioutil.WriteFile("/tmp/dat1", f1, 0644)
+	//check(err)
+	//f, err := os.Create("/tmp/dat2")
+	//check(err)
+	//defer f.Close()
+
+	//f2 := []byte{115, 111, 109, 101, 10}
+	//n2, err := f.Write(f2)
+	//check(err)
+	//fmt.Printf("wrote %d bytes to file\n", n2)
+	//f.Sync()
+	UserMap = make(map[string]int)
+	//UserMap["Users Online: "] = assignid()
 	server, err := net.Listen("tcp", ":9009")
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -182,7 +260,7 @@ func main() {
 		Input: make(chan Message),
 	}
 
-	UserSlice = append(UserSlice, "Users Online: ")
+	//UserSlice = append(UserSlice, "Users Online: ")
 
 	go mainServer.Run()
 
