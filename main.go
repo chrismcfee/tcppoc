@@ -169,7 +169,12 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				//io.WriteString(conn, "registered name")
 			} else if strings.HasPrefix(ln, "/login") {
 				//io.WriteString(conn, "login")
-				login(ln, user.Name, loginprefix)
+				lis := login(ln, user.Name, loginprefix)
+				if lis == true {
+					io.WriteString(conn, "Login Successful")
+				} else {
+					io.WriteString(conn, "Invalid Login Credentials")
+				}
 			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
@@ -205,7 +210,7 @@ func register(input string, username string, registerprefix string) {
 	for scanner.Scan() {
 		leftOfDelimiter := strings.Split(scanner.Text(), delimiter)[0]
 		if leftOfDelimiter == username {
-			fmt.Println("someone attempting to hijack registered account")
+			fmt.Println("someone attempting to hijack account that already exists. registration failed")
 			return
 
 			//io.WriteString(conn, "user already registered...")

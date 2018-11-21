@@ -1,2 +1,1 @@
 - lock a name from being /nick'd into if user is login
-= prevent registration of user if user exists in registration file
