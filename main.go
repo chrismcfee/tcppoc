@@ -23,6 +23,18 @@ var ServerName string = "Server"
 var defaultName string = "GuestNNN"
 
 var UserMap map[string]int
+var loggedInUserMap map[string]int
+
+/*
+
+If a user is logged in, add the user to the map of logged in users
+When attempting to login a user, check the map of logged in users.
+
+If user is already logged in: FAIL
+If users name is not found in logged in map and user authentication is successful, must add to map
+
+
+*/
 
 type Newname struct {
 	Name string
@@ -58,6 +70,14 @@ func addToUserMap(id int, key string) {
 func delFromUserMap(delname string) {
 	delete(UserMap, delname)
 
+}
+
+func addToLoggedInUserMap(id int, key string) {
+	loggedInUserMap[key] = id
+}
+
+func delFromLoggedInUserMap(delloggedname string) {
+	delete(loggedInUserMap, delloggedname)
 }
 
 func listallusers(Users map[string]User) (listofusers_result string) {
@@ -210,7 +230,7 @@ func register(input string, username string, registerprefix string) {
 	for scanner.Scan() {
 		leftOfDelimiter := strings.Split(scanner.Text(), delimiter)[0]
 		if leftOfDelimiter == username {
-			fmt.Println("someone attempting to hijack account that already exists. registration failed")
+			fmt.Println("someone attempting to register account that already exists. registration failed")
 			return
 
 			//io.WriteString(conn, "user already registered...")
