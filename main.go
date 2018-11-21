@@ -10,7 +10,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -23,15 +23,6 @@ var ServerName string = "Server"
 var defaultName string = "GuestNNN"
 
 var UserMap map[string]int
-
-//m := make(map[int]string)
-//var UserSlice = make([]string, 0, 999)
-
-//var UserMap map[int]string
-
-//type connID struct {
-//	id int
-//}
 
 type Newname struct {
 	Name string
@@ -67,26 +58,7 @@ func addToUserMap(id int, key string) {
 func delFromUserMap(delname string) {
 	delete(UserMap, delname)
 
-	//var sessions =  map[string] chan int{}
-	//var sessions = map[string] chan int{};
-	//sessions["moo"] = make (chan int);
-	//_, ok := sessions["moo"];
-	//if ok {
-	//    delete(sessions, "moo");
 }
-
-//func addusertolist(addedname string) {
-//	UserSlice = append(UserSlice, addedname)
-//}
-
-//func deluserfromlist(deletedname string) {
-//	//a := []string{"A", "B", "C", "D", "E"}
-//	i := len(UserSlice) - 1
-//	UserSlice[i] = UserSlice[(len(UserSlice))-1]
-//	UserSlice[len(UserSlice)-1] = ""
-//	UserSlice = UserSlice[:len(UserSlice)-1]
-//	// Remove the element at index i from userslice
-//}
 
 func listallusers(Users map[string]User) (listofusers_result string) {
 	var curlist string
@@ -182,7 +154,6 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 			ln := scanner.Text()
 			nickprefix := `/nick`
 			registerprefix := `/register `
-			//addusertolist(user.Name)
 			addToUserMap(assignid(), user.Name)
 			if strings.HasPrefix(ln, nickprefix) {
 				nn := changeNick(ln, nickprefix)
@@ -191,18 +162,12 @@ func handleConn(srvr *Server, conn net.Conn, Users map[string]User) {
 				io.WriteString(conn, "Nickname changed to: ")
 				io.WriteString(conn, nn)
 				addToUserMap(assignid(), nn)
-				//addusertolist(nn)
 				user.Name = nn
 			} else if strings.HasPrefix(ln, "/register") {
-				//io.WriteString(conn, "registered username")
 				register(ln, user.Name, registerprefix)
-				io.WriteString(conn, "registered name")
+				//io.WriteString(conn, "registered name")
 			} else if strings.HasPrefix(ln, "/login") {
 				io.WriteString(conn, "login")
-				//} //else if strings.HasPrefix(ln, "/names") {
-				//for _, each := range UserSlice {
-				//	io.WriteString(conn, each+" ")
-				//}
 			} else {
 				srvr.Input <- Message{user.Name, ln}
 			}
@@ -239,16 +204,14 @@ func register(input string, username string, registerprefix string) {
 		leftOfDelimiter := strings.Split(scanner.Text(), delimiter)[0]
 		if leftOfDelimiter == username {
 			fmt.Println("someone attempting to hijack registered account")
+			return
+
 			//io.WriteString(conn, "user already registered...")
-		} else {
-
-			if _, err = f.WriteString(username + " " + registrationinput + "\n"); err != nil {
-				panic(err)
-			}
-
 		}
-		//rightOfDelimiter := strings.Join(strings.Split(scanner.Text(), delimiter)[1:], delimiter)
-		//fmt.Println(leftOfDelimiter)
+	}
+
+	if _, err = f.WriteString(username + " " + registrationinput + "\n"); err != nil {
+		panic(err)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -273,77 +236,12 @@ func CreatePasswordFile() {
 	fmt.Printf("\nFile Name: %s", file.Name())
 }
 
-func TestAddLine() {
-	//file, err:=
-	//defer file.Close()
-	//len, err := file.WriteString
-	//mydata := []byte("test\n")
-
-	// the WriteFile method returns an error if unsuccessful
-	//err := ioutil.WriteFile("usernameregistrations.txt", mydata, 0777)
-	// handle this error
-	//if err != nil {
-	// print it out
-	//	fmt.Println(err)
-	//}
-
-	data, err := ioutil.ReadFile("usernameregistrations.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	//fmt.Print(string(data))
-
-	f, err := os.OpenFile("usernameregistrations.txt", os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	if _, err = f.WriteString("adding line!\n"); err != nil {
-		panic(err)
-	}
-
-	data, err = ioutil.ReadFile("usernameregistrations.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Print(string(data))
-
-}
 func main() {
 	if _, err := os.Stat("./usernameregistrations.txt"); os.IsNotExist(err) {
-		// path/to/whatever does not exist
 		CreatePasswordFile()
 	}
 
-	//if _, err := os.Stat("./usernameregistrations.txt"); err == nil {
-	//TestAddLine()
-	//	fmt.Println("Username registration file already exists. Continuing...")
-	// path/to/whatever exists
-	//}
-
-	//testing write to file here
-	//f1 := []byte("hello\ngo\n")
-	//err := ioutil.WriteFile("/tmp/dat1", f1, 0644)
-	//check(err)
-	//f, err := os.Create("/tmp/dat2")
-	//check(err)
-	//defer f.Close()
-
-	//f2 := []byte{115, 111, 109, 101, 10}
-	//n2, err := f.Write(f2)
-	//check(err)
-	//fmt.Printf("wrote %d bytes to file\n", n2)
-	//f.Sync()
-
-	//passwordlisttitle := "Password List: "
-
-	//fileHandle, _ := os.
-
 	UserMap = make(map[string]int)
-	//UserMap["Users Online: "] = assignid()
 	server, err := net.Listen("tcp", ":9009")
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -356,8 +254,6 @@ func main() {
 		Leave: make(chan User),
 		Input: make(chan Message),
 	}
-
-	//UserSlice = append(UserSlice, "Users Online: ")
 
 	go mainServer.Run()
 
